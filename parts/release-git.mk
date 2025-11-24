@@ -2,7 +2,7 @@
 tag-major: ## Increment major version (X.y.z -> X+1.0.0)
 	$(eval NEW_VERSION := $(call increment_version,major))
 	@echo "Bumping version from $(GIT_TAG) to $(NEW_VERSION)"
-	@$(MAKE) changelog
+	@$(MAKE) changelog CLIFF_TAG=$(NEW_VERSION)
 	@git add CHANGELOG.md
 	@git commit -m "chore(release): Release v$(NEW_VERSION)"
 	@git tag v$(NEW_VERSION)
@@ -12,7 +12,7 @@ tag-major: ## Increment major version (X.y.z -> X+1.0.0)
 tag-minor: ## Increment minor version (x.Y.z -> x.Y+1.0)
 	$(eval NEW_VERSION := $(call increment_version,minor))
 	@echo "Bumping version from $(GIT_TAG) to $(NEW_VERSION)"
-	@$(MAKE) changelog
+	@$(MAKE) changelog CLIFF_TAG=$(NEW_VERSION)
 	@git add CHANGELOG.md
 	@git commit -m "chore(release): Release v$(NEW_VERSION)"
 	@git tag v$(NEW_VERSION)
@@ -22,7 +22,7 @@ tag-minor: ## Increment minor version (x.Y.z -> x.Y+1.0)
 tag-patch: ## Increment patch version (x.y.Z -> x.y.Z+1)
 	$(eval NEW_VERSION := $(call increment_version,patch))
 	@echo "Bumping version from $(GIT_TAG) to $(NEW_VERSION)"
-	@$(MAKE) changelog
+	@$(MAKE) changelog CLIFF_TAG=$(NEW_VERSION)
 	@git add CHANGELOG.md
 	@git commit -m "chore(release): Release v$(NEW_VERSION)"
 	@git tag v$(NEW_VERSION)

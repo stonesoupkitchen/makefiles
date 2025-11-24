@@ -42,6 +42,14 @@ GIT_TAG    = $(shell git describe --tags --abbrev=0 --exact-match 2>/dev/null ||
 
 CLIFF_CONFIG ?= cliff.toml
 
+# When generating changelogs with git-cliff,
+# we sometimes override this value with the _next_
+# tag from the tag-* targets.
+#
+# However, we still want the tasks to run independently,
+# so we default the value to the current tag.
+CLIFF_TAG ?= $(GIT_TAG)
+
 IMAGE_NAME := "dummy"
 REGISTRY   ?= docker.io
 REPOSITORY := stonesoupkitchen/$(IMAGE_NAME)
@@ -164,7 +172,7 @@ deploy: ## Deploy changes to a remote environment.
 tag-major: ## Increment major version (X.y.z -> X+1.0.0)
 	$(eval NEW_VERSION := $(call increment_version,major))
 	@echo "Bumping version from $(GIT_TAG) to $(NEW_VERSION)"
-	@$(MAKE) changelog
+	@$(MAKE) changelog CLIFF_TAG=$(NEW_VERSION)
 	@git add CHANGELOG.md
 	@git commit -m "chore(release): Release v$(NEW_VERSION)"
 	@git tag v$(NEW_VERSION)
@@ -174,7 +182,7 @@ tag-major: ## Increment major version (X.y.z -> X+1.0.0)
 tag-minor: ## Increment minor version (x.Y.z -> x.Y+1.0)
 	$(eval NEW_VERSION := $(call increment_version,minor))
 	@echo "Bumping version from $(GIT_TAG) to $(NEW_VERSION)"
-	@$(MAKE) changelog
+	@$(MAKE) changelog CLIFF_TAG=$(NEW_VERSION)
 	@git add CHANGELOG.md
 	@git commit -m "chore(release): Release v$(NEW_VERSION)"
 	@git tag v$(NEW_VERSION)
@@ -184,7 +192,7 @@ tag-minor: ## Increment minor version (x.Y.z -> x.Y+1.0)
 tag-patch: ## Increment patch version (x.y.Z -> x.y.Z+1)
 	$(eval NEW_VERSION := $(call increment_version,patch))
 	@echo "Bumping version from $(GIT_TAG) to $(NEW_VERSION)"
-	@$(MAKE) changelog
+	@$(MAKE) changelog CLIFF_TAG=$(NEW_VERSION)
 	@git add CHANGELOG.md
 	@git commit -m "chore(release): Release v$(NEW_VERSION)"
 	@git tag v$(NEW_VERSION)
@@ -195,14 +203,14 @@ changelog: require-git-cliff ## Generate the changelog.
 	@git-cliff \
     --config "$(CLIFF_CONFIG)" \
     --output="CHANGELOG.md" \
-    --tag "$(GIT_TAG)"
+    --tag "$(CLIFF_TAG)"
 
 .PHONY: patch-notes
 patch-notes: require-git-cliff ## Generate patch notes from unreleased changes.
 	@git-cliff \
     --config "$(CLIFF_CONFIG)" \
     --unreleased \
-    --tag "$(GIT_TAG)" \
+    --tag "$(CLIFF_TAG)" \
     | tail -n+6
 
 .PHONY: release-notes
@@ -210,7 +218,7 @@ release-notes: require-git-cliff ## Generate release notes from the current tag.
 	@git-cliff \
     --config "$(CLIFF_CONFIG)" \
     --current \
-    --tag "$(GIT_TAG)" \
+    --tag "$(CLIFF_TAG)" \
     | tail -n+6
 
 .PHONY: release
