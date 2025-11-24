@@ -42,6 +42,24 @@ GIT_TAG    = $(shell git describe --tags --abbrev=0 --exact-match 2>/dev/null ||
 
 CLIFF_CONFIG ?= cliff.toml
 
+IMAGE_NAME := "dummy"
+REGISTRY   ?= docker.io
+REPOSITORY := stonesoupkitchen/$(IMAGE_NAME)
+
+TAGS := $(GIT_TAG)
+TAGS += sha-$(GIT_SHA)
+
+ARGS := --build-arg BUILD_DATE="$(DATE)"
+ARGS += --build-arg GIT_COMMIT="$(GIT_COMMIT)"
+
+PLATFORMS := "linux/amd64"
+
+# Helper variable to identify all images built by our container builder.
+# Used in the `clean` target to remove all build artifacts.
+#
+CACHE = $(shell docker images --format '{{.Repository}}:{{.Tag}}' | \
+        grep "$(REGISTRY)/$(REPOSITORY)")
+
 # HELPERS
 #//////////////////////////////////////////////////////////////////////////////
 #
@@ -62,6 +80,12 @@ require-git-cliff:
     echo "  GitHub: https://github.com/orhun/git-cliff/releases"; \
     exit 1; \
   fi
+
+# Helper variable to identify all images built by our container builder.
+# Used in the `clean` target to remove all build artifacts.
+#
+CACHE = $(shell docker images --format '{{.Repository}}:{{.Tag}}' | \
+        grep "$(REGISTRY)/$(REPOSITORY)")
 
 # TASKS
 #//////////////////////////////////////////////////////////////////////////////
@@ -88,6 +112,7 @@ info: ## Show build and tool configurations.
 
 .PHONY: clean
 clean: ## Clean up all build and release artifacts.
+	docker rmi $(CACHE)
 
 .PHONY: devenv
 devenv: ## Initialize a development environment.
@@ -97,15 +122,23 @@ build: build-debug ## Build the project.
 
 .PHONY: build-debug
 build-debug: ## Create a debug build of the project.
+	@docker build $(ARGS) -t $(REGISTRY)/$(REPOSITORY):latest .
 
 .PHONY: build-release
 build-release: ## Create a release build of the project.
+	@docker build $(ARGS) -t $(REGISTRY)/$(REPOSITORY):latest --platform $(PLATFORMS) .
+	@for tag in $(TAGS); do \
+		docker tag $(REGISTRY)/$(REPOSITORY):latest $(REGISTRY)/$(REPOSITORY):$$tag ; \
+		echo "Successfully tagged $(REGISTRY)/$(REPOSITORY):$$tag"
+	done
 
 .PHONY: fmt
-fmt: ## Format source code.
+fmt: require-dockerfmt ## Format source code.
+	@dockerfmt Dockerfile
 
 .PHONY: lint
-lint: ## Lint source code for errors and smells.
+lint: require-hadolint ## Lint source code for errors and smells.
+	@hadolint Dockerfile
 
 ##@ Quality
 
@@ -113,16 +146,7 @@ lint: ## Lint source code for errors and smells.
 quality: fmt lint test ## Run all quality checks.
 
 .PHONY: test
-test: test-unit test-integration ## Run all tests.
-
-.PHONY: test-unit
-test-unit: ## Run unit tests.
-
-.PHONY: test-integration
-test-integration: ## Run integration tests.
-
-.PHONY: test-e2e
-test-e2e: ## Run end-to-end tests.
+test: ## Run tests.
 
 ##@ Packaging
 
@@ -188,4 +212,10 @@ release-notes: require-git-cliff ## Generate release notes from the current tag.
     --current \
     --tag "$(GIT_TAG)" \
     | tail -n+6
+
+.PHONY: release
+release: build-release ## Release container image.
+	@for tag in $(TAGS); do \
+		docker push $(REGISTRY)/$(REPOSITORY):$$tag ; \
+	done
 

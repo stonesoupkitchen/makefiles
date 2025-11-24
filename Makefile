@@ -72,41 +72,79 @@ devenv: ## Initialize a development environment.
 
 .PHONY: build
 build: ## Build the project.
+build: dist/docker.mk
 build: dist/template.mk
+
+dist/docker.mk:
+	@mkdir -p dist
+	@sed -e 's/^/# /' LICENSE > dist/docker.mk
+	@echo "" >> dist/docker.mk
+	@cat parts/header-preamble.mk >> dist/docker.mk
+	@cat parts/preamble.mk >> dist/docker.mk
+	@cat parts/header-vars.mk >> dist/docker.mk
+	@cat parts/vars-git.mk >> dist/docker.mk
+	@cat parts/vars-cliff.mk >> dist/docker.mk
+	@cat parts/vars-docker.mk >> dist/docker.mk
+	@cat parts/header-helpers.mk >> dist/docker.mk
+	@cat parts/helpers-release-git.mk >> dist/docker.mk
+	@cat parts/helpers-release-cliff.mk >> dist/docker.mk
+	@cat parts/helpers-docker.mk >> dist/docker.mk
+	@cat parts/header-tasks.mk >> dist/docker.mk
+	@echo "##@ General" >> dist/docker.mk
+	@echo "" >> dist/docker.mk
+	@cat parts/help.mk >> dist/docker.mk
+	@cat parts/info-dummy.mk >> dist/docker.mk
+	@echo "##@ Development" >> dist/docker.mk
+	@echo "" >> dist/docker.mk
+	@cat parts/development-docker.mk >> dist/docker.mk
+	@echo "##@ Quality" >> dist/docker.mk
+	@echo "" >> dist/docker.mk
+	@cat parts/quality-docker.mk >> dist/docker.mk
+	@echo "##@ Packaging" >> dist/docker.mk
+	@echo "" >> dist/docker.mk
+	@cat parts/package-dummy.mk >> dist/docker.mk
+	@echo "##@ Deployment" >> dist/docker.mk
+	@echo "" >> dist/docker.mk
+	@cat parts/deploy-dummy.mk >> dist/docker.mk
+	@echo "##@ Release Management" >> dist/docker.mk
+	@echo "" >> dist/docker.mk
+	@cat parts/release-git.mk >> dist/docker.mk
+	@cat parts/release-cliff.mk >> dist/docker.mk
+	@cat parts/release-docker.mk >> dist/docker.mk
 
 dist/template.mk:
 	@mkdir -p dist
 	@sed -e 's/^/# /' LICENSE > dist/template.mk
 	@echo "" >> dist/template.mk
-	@cat parts/header-preamble >> dist/template.mk
-	@cat parts/preamble >> dist/template.mk
-	@cat parts/header-vars >> dist/template.mk
-	@cat parts/vars-git >> dist/template.mk
-	@cat parts/vars-cliff >> dist/template.mk
-	@cat parts/header-helpers >> dist/template.mk
-	@cat parts/helpers-release-git >> dist/template.mk
-	@cat parts/helpers-release-cliff >> dist/template.mk
-	@cat parts/header-tasks >> dist/template.mk
+	@cat parts/header-preamble.mk >> dist/template.mk
+	@cat parts/preamble.mk >> dist/template.mk
+	@cat parts/header-vars.mk >> dist/template.mk
+	@cat parts/vars-git.mk >> dist/template.mk
+	@cat parts/vars-cliff.mk >> dist/template.mk
+	@cat parts/header-helpers.mk >> dist/template.mk
+	@cat parts/helpers-release-git.mk >> dist/template.mk
+	@cat parts/helpers-release-cliff.mk >> dist/template.mk
+	@cat parts/header-tasks.mk >> dist/template.mk
 	@echo "##@ General" >> dist/template.mk
 	@echo "" >> dist/template.mk
-	@cat parts/help >> dist/template.mk
-	@cat parts/info-dummy >> dist/template.mk
+	@cat parts/help.mk >> dist/template.mk
+	@cat parts/info-dummy.mk >> dist/template.mk
 	@echo "##@ Development" >> dist/template.mk
 	@echo "" >> dist/template.mk
-	@cat parts/development-dummy >> dist/template.mk
+	@cat parts/development-dummy.mk >> dist/template.mk
 	@echo "##@ Quality" >> dist/template.mk
 	@echo "" >> dist/template.mk
-	@cat parts/quality-dummy >> dist/template.mk
+	@cat parts/quality-dummy.mk >> dist/template.mk
 	@echo "##@ Packaging" >> dist/template.mk
 	@echo "" >> dist/template.mk
-	@cat parts/package-dummy >> dist/template.mk
+	@cat parts/package-dummy.mk >> dist/template.mk
 	@echo "##@ Deployment" >> dist/template.mk
 	@echo "" >> dist/template.mk
-	@cat parts/deploy-dummy >> dist/template.mk
+	@cat parts/deploy-dummy.mk >> dist/template.mk
 	@echo "##@ Release Management" >> dist/template.mk
 	@echo "" >> dist/template.mk
-	@cat parts/release-git >> dist/template.mk
-	@cat parts/release-cliff >> dist/template.mk
+	@cat parts/release-git.mk >> dist/template.mk
+	@cat parts/release-cliff.mk >> dist/template.mk
 
 ##@ Release Management
 

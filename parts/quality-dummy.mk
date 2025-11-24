@@ -2,7 +2,7 @@
 quality: fmt lint test ## Run all quality checks.
 
 .PHONY: test
-test: ## Run all tests.
+test: test-unit test-integration ## Run all tests.
 
 .PHONY: test-unit
 test-unit: ## Run unit tests.
